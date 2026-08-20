@@ -1,15 +1,15 @@
 #pragma once
 
-#include <Packets/PacketDataStream.hpp>
+#include <Packets/Serverbound/PacketDataStream.hpp>
 
 namespace conv
 {
     class Connection;
 
-    class ServerboundPacketHandler
+    class PacketHandler
     {
     public:
-        virtual ~ServerboundPacketHandler() = default;
+        virtual ~PacketHandler() = default;
 
         virtual void HandlePacket(Connection& connection,
             PacketDataStream stream) = 0;

@@ -1,5 +1,5 @@
 #include <string>
-#include <Packets/PacketDataStream.hpp>
+#include <Packets/Serverbound/PacketDataStream.hpp>
 
 namespace conv
 {

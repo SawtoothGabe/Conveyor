@@ -1,9 +1,9 @@
-#include <Packets/PacketHandlerRegistry.hpp>
+#include <Packets/Serverbound/PacketHandlerRegistry.hpp>
 
 namespace conv
 {
     void PacketHandlerRegistry::Register(const State state, const int packetID,
-        std::unique_ptr<ServerboundPacketHandler> handler)
+        std::unique_ptr<PacketHandler> handler)
     {
         m_handlers[state][packetID].emplace_back(std::move(handler));
     }

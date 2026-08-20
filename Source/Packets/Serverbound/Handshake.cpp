@@ -1,6 +1,7 @@
 #include <Connection.hpp>
 #include <IO/Logger.hpp>
-#include <Packets/Serverbound/Handshake.hpp>
+
+#include <Packets/Serverbound/PacketDefinitions.hpp>
 
 namespace conv
 {

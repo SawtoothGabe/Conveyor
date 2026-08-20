@@ -1,6 +1,6 @@
 #include <Connection.hpp>
-#include <Packets/PacketDataStream.hpp>
-#include <Packets/PacketHandlerRegistry.hpp>
+#include <Packets/Serverbound/PacketDataStream.hpp>
+#include <Packets/Serverbound/PacketHandlerRegistry.hpp>
 
 namespace conv
 {
