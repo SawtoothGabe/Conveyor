@@ -8,20 +8,22 @@ namespace conv
         m_handlers[state][packetID].emplace_back(std::move(handler));
     }
 
-    void PacketHandlerRegistry::Dispatch(const State state, const int packetID,
+    bool PacketHandlerRegistry::Dispatch(const State state, const int packetID,
         Connection& connection, const PacketDataStream& data) const
     {
         if (!m_handlers.contains(state))
-            return;
+            return false;
 
         const auto& packets = m_handlers.at(state);
 
         if (!packets.contains(packetID))
-            return;
+            return false;
 
-        for (auto& handlers = packets.at(packetID);
-                const auto& handler : handlers)
+        auto& handlers = packets.at(packetID);
+        for (const auto& handler : handlers)
             handler->HandlePacket(connection, data);
+
+        return !handlers.empty();
     }
 
     PacketHandlerRegistry& PacketHandlerRegistry::Get()

@@ -6,4 +6,5 @@ namespace conv
 {
     DEFINE_SIMPLE_PACKET_HANDLER(Handshake);
     DEFINE_SIMPLE_PACKET_HANDLER(StatusRequest);
+    DEFINE_SIMPLE_PACKET_HANDLER(PingRequest);
 }

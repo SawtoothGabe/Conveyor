@@ -2,6 +2,7 @@
 
 #include <Common/Asio.hpp>
 #include <Common/Types.hpp>
+#include <Packets/Clientbound/PacketBuilder.hpp>
 
 namespace conv
 {
@@ -14,10 +15,13 @@ namespace conv
         void Disconnect();
 
         void SetState(State state);
+        void SendPacket(const Packet& packet);
 
         tcp::socket& GetSocket();
     private:
         static constexpr size_t READ_BLOCK_SIZE = 512;
+
+        void Write(std::span<uint8_t> data);
 
         void MakeRead();
         bool OnRead(size_t bytesRead);

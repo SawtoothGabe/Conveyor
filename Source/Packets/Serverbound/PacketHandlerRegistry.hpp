@@ -27,7 +27,7 @@ namespace conv
         void Register(State state, int packetID,
             std::unique_ptr<PacketHandler> handler);
 
-        void Dispatch(State state, int packetID, Connection& connection,
+        bool Dispatch(State state, int packetID, Connection& connection,
             const PacketDataStream& data) const;
 
         static PacketHandlerRegistry& Get();

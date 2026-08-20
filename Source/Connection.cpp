@@ -70,10 +70,11 @@ namespace conv
         PacketDataStream stream(m_currentPacketData);
         int id = stream.ReadVarInt();
 
-        PacketHandlerRegistry::Get().Dispatch(m_state, id,
+        if (!PacketHandlerRegistry::Get().Dispatch(m_state, id,
             *this, PacketDataStream(std::span(
                 m_currentPacketData.begin() + stream.GetCurrentIndex(),
-                m_currentPacketData.end())));
+                m_currentPacketData.end()))))
+            LOG_WARN("Unhandled packet with id {}", id);
 
         m_currentPacketData.clear();
     }
@@ -93,5 +94,30 @@ namespace conv
     void Connection::SetState(const State state)
     {
         m_state = state;
+    }
+
+    void Connection::SendPacket(const Packet& packet)
+    {
+        Packet fullPacket(packet.GetState(), packet.GetID());
+        fullPacket.WriteVarInt(packet.GetSize() + Packet::VarIntSize(packet.GetID()));
+        fullPacket.WriteVarInt(packet.GetID());
+        fullPacket.WriteByteArray(std::span(
+            packet.GetData(), packet.GetSize()));
+
+        Write(std::span(
+            fullPacket.GetData(), fullPacket.GetSize()));
+    }
+
+    void Connection::Write(std::span<uint8_t> data)
+    {
+        asio::async_write(m_socket, asio::buffer(data),
+        [this](std::error_code ec, size_t)
+        {
+           if (!ec)
+               return;
+
+            LOG_ERROR("Error while writing packet: {}", ec.message());
+            Disconnect();
+        });
     }
 }
