@@ -18,9 +18,11 @@ file(GLOB_RECURSE SOURCES "Source/*.cpp" "Source/*.hpp")
 
 add_executable(Conveyor ${SOURCES})
 
-target_include_directories(Conveyor PRIVATE ${asio_SOURCE_DIR}/asio/include)
+target_include_directories(Conveyor PRIVATE "Source" ${asio_SOURCE_DIR}/asio/include)
 target_compile_definitions(Conveyor PRIVATE ASIO_NO_HANDLER_AS_HANDLER)
 
 if(WIN32)
-  target_link_libraries(Conveyor PRIVATE ws2_32 wsock32)
+  set(OPTIONAL_LIBS ws2_32 wsock32)
 endif()
+
+target_link_libraries(Conveyor PRIVATE stdc++exp ${OPTIONAL_LIBS})
