@@ -4,6 +4,7 @@ project(Conveyor)
 set(CMAKE_CXX_STANDARD 26)
 
 include(FetchContent)
+include(cmake/FetchOpenSSL.cmake)
 
 FetchContent_Declare(
     asio
@@ -13,6 +14,13 @@ FetchContent_Declare(
 )
 set(ASIO_NO_HANDLER_AS_HANDLER ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(asio)
+
+fetch_openssl(
+    REPO         SawtoothGabe/Conveyor
+    TAG          v1.0
+    OPENSSL_REF  openssl-4.0.2
+    STATIC
+)
 
 file(GLOB_RECURSE SOURCES "Source/*.cpp" "Source/*.hpp")
 
@@ -28,3 +36,4 @@ endif ()
 find_package(OpenSSL REQUIRED)
 
 target_link_libraries(Conveyor PRIVATE stdc++exp OpenSSL::SSL OpenSSL::Crypto ${OPTIONAL_LIBS})
+openssl_post_link(Conveyor)
