@@ -1,4 +1,5 @@
 #include <string>
+#include <Common/Assert.hpp>
 #include <Packets/Serverbound/PacketDataStream.hpp>
 
 namespace conv
@@ -38,8 +39,8 @@ namespace conv
 
     uint16_t PacketDataStream::ReadUInt16()
     {
-        if (m_currentIndex + sizeof(uint16_t) >= m_data.size())
-            return 0.0;
+        CONV_ASSERT(m_currentIndex + sizeof(uint16_t) <= m_data.size(),
+            "Index out of bounds");
 
         uint16_t value;
         const auto doubleIter = reinterpret_cast<uint8_t*>(&value);
@@ -53,8 +54,8 @@ namespace conv
 
     double PacketDataStream::ReadDouble()
     {
-        if (m_currentIndex + sizeof(double) >= m_data.size())
-            return 0.0;
+        CONV_ASSERT(m_currentIndex + sizeof(double) <= m_data.size(),
+            "Index out of bounds");
 
         double value;
         const auto doubleIter = reinterpret_cast<uint8_t*>(&value);
@@ -74,8 +75,8 @@ namespace conv
 
     int64_t PacketDataStream::ReadLong()
     {
-        if (m_currentIndex + sizeof(int64_t) >= m_data.size())
-            return 0.0;
+        CONV_ASSERT(m_currentIndex + sizeof(int64_t) <= m_data.size(),
+            "Index out of bounds");
 
         int64_t value;
         const auto longIter = reinterpret_cast<uint8_t*>(&value);
@@ -95,12 +96,28 @@ namespace conv
 
     std::string PacketDataStream::ReadStringWithSize(const size_t size)
     {
+        CONV_ASSERT(m_currentIndex + size <= m_data.size(),
+            "Index out of bounds");
+
         std::string str;
         str.insert(str.end(), m_data.begin() + m_currentIndex,
-            m_data.begin() + std::min(m_currentIndex + size, m_data.size()));
+            m_data.begin() + m_currentIndex + size);
 
         m_currentIndex += size;
         return str;
+    }
+
+    UUID PacketDataStream::ReadUUID()
+    {
+        CONV_ASSERT(m_currentIndex + sizeof(UUID) <= m_data.size(),
+            "Index out of bounds");
+
+        const UUID uuid(
+            *reinterpret_cast<uint64_t*>(&m_data[m_currentIndex]),
+            *reinterpret_cast<uint64_t*>(&m_data[m_currentIndex + 8]));
+        m_currentIndex += sizeof(UUID);
+
+        return uuid;
     }
 
     std::string PacketDataStream::ReadString()
@@ -109,7 +126,7 @@ namespace conv
         return ReadStringWithSize(length);
     }
 
-    void PacketDataStream::Seek(size_t position)
+    void PacketDataStream::Seek(const size_t position)
     {
         m_currentIndex = position;
     }

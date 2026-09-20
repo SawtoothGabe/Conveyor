@@ -111,7 +111,7 @@ namespace conv
     void Connection::Write(std::span<uint8_t> data)
     {
         asio::async_write(m_socket, asio::buffer(data),
-        [this](std::error_code ec, size_t)
+        [this](const std::error_code ec, size_t)
         {
            if (!ec)
                return;

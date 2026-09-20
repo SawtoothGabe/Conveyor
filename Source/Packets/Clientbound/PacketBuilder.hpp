@@ -6,4 +6,5 @@ namespace conv::PacketBuilder
 {
     Packet MakeStatusResponse();
     Packet MakePong(int64_t timestamp);
+    Packet MakeEncryptionRequest();
 }

@@ -11,13 +11,14 @@
         (PacketHandlerRegistry::Get().Register(state, id, \
             std::make_unique<name>(__VA_ARGS__)), 0)
 
-#define DEFINE_SIMPLE_PACKET_HANDLER(name) \
+#define DEFINE_SIMPLE_PACKET_HANDLER(state, id, name, ...) \
     class name : public PacketHandler \
     { \
     public: \
         virtual void HandlePacket(Connection& connection, \
             PacketDataStream stream) override; \
-    };
+    }; \
+    REGISTER_PACKET_HANDLER(state, id, name, __VA_ARGS__)
 
 namespace conv
 {

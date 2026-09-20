@@ -1,10 +1,12 @@
 #include <Connection.hpp>
 #include <IO/Logger.hpp>
 
-#include <Packets/Serverbound/PacketDefinitions.hpp>
+#include <Packets/Serverbound/PacketHandlerRegistry.hpp>
 
 namespace conv
 {
+    DEFINE_SIMPLE_PACKET_HANDLER(State::HANDSHAKING, 0x0, Handshake);
+
     void Handshake::HandlePacket(Connection& connection,
         PacketDataStream stream)
     {

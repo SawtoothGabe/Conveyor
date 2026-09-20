@@ -1,0 +1,129 @@
+name: Build OpenSSL
+
+on:
+  workflow_dispatch:
+    inputs:
+      openssl_ref:
+        description: "OpenSSL git tag to build (e.g. openssl-3.5.0)"
+        required: false
+        default: "openssl-3.5.0"
+  push:
+    tags: ["v*"]
+
+env:
+  OPENSSL_REF: ${{ inputs.openssl_ref || 'openssl-3.5.0' }}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Linux + macOS (native builds, one runner per platform)
+  # ---------------------------------------------------------------------------
+  build-unix:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-x86_64,  os: ubuntu-24.04 }
+          - { name: linux-arm64,   os: ubuntu-24.04-arm }
+          - { name: macos-arm64,   os: macos-15 }
+          - { name: macos-x86_64,  os: macos-15-intel }
+    steps:
+      - name: Checkout OpenSSL
+        uses: actions/checkout@v4
+        with:
+          repository: openssl/openssl
+          ref: ${{ env.OPENSSL_REF }}
+
+      - name: Configure
+        run: |
+          ./config --prefix="$PWD/dist" --openssldir="$PWD/dist/ssl" \
+            no-tests shared
+
+      - name: Build
+        run: make -j"$(getconf _NPROCESSORS_ONLN)"
+
+      - name: Test (optional, slow; remove no-tests above to enable)
+        if: false
+        run: make test
+
+      - name: Install to staging dir
+        run: make install_sw
+
+      - name: Package
+        run: tar -C dist -czf openssl-${{ env.OPENSSL_REF }}-${{ matrix.name }}.tar.gz .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openssl-${{ matrix.name }}
+          path: openssl-*.tar.gz
+
+  # ---------------------------------------------------------------------------
+  # Windows (MSVC + NASM + Strawberry Perl)
+  # ---------------------------------------------------------------------------
+  build-windows:
+    name: windows-x64
+    runs-on: windows-2022
+    steps:
+      - name: Checkout OpenSSL
+        uses: actions/checkout@v4
+        with:
+          repository: openssl/openssl
+          ref: ${{ env.OPENSSL_REF }}
+
+      - name: Install NASM
+        uses: ilammy/setup-nasm@v1
+
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure
+        shell: cmd
+        run: >
+          perl Configure VC-WIN64A
+          --prefix=%GITHUB_WORKSPACE%\dist
+          --openssldir=%GITHUB_WORKSPACE%\dist\ssl
+          no-tests
+
+      - name: Build
+        shell: cmd
+        run: nmake
+
+      - name: Install to staging dir
+        shell: cmd
+        run: nmake install_sw
+
+      - name: Package
+        shell: pwsh
+        run: Compress-Archive -Path dist\* -DestinationPath openssl-${{ env.OPENSSL_REF }}-windows-x64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openssl-windows-x64
+          path: openssl-*.zip
+
+  # ---------------------------------------------------------------------------
+  # Attach everything to a GitHub Release when a tag is pushed
+  # ---------------------------------------------------------------------------
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-unix, build-windows]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" artifacts/* \
+            --repo "${{ github.repository }}" \
+            --title "${{ github.ref_name }}" \
+            --notes "OpenSSL ${{ env.OPENSSL_REF }} builds"

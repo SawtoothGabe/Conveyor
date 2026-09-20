@@ -7,12 +7,12 @@ namespace conv::PacketBuilder
         Packet packet(State::STATUS, 0x0);
         packet.WriteString(R"({
     "version": {
-        "name": "1.21.1",
+        "name": "Conveyor Server",
         "protocol": 767
     },
     "players": {
-        "max": 20,
-        "online": 1,
+        "max": 0,
+        "online": -1,
         "sample": [
             {
                 "name": "thinkofdeath",
@@ -21,7 +21,7 @@ namespace conv::PacketBuilder
         ]
     },
     "description": {
-        "text": "Hello, world!"
+        "text": "yo"
     },
     "favicon": "data:image/png;base64,<data>",
     "enforcesSecureChat": false

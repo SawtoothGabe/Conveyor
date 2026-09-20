@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <span>
+#include <Common/UUID.hpp>
 
 namespace conv
 {
@@ -16,6 +17,7 @@ namespace conv
         int64_t ReadLong();
         std::string ReadString();
         std::string ReadStringWithSize(size_t size);
+        UUID ReadUUID();
 
         void Seek(size_t position);
         size_t GetCurrentIndex() const;
